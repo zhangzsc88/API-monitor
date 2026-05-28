@@ -42,14 +42,14 @@
 
 ### 直接下载 EXE（无需 Python）
 
-👉 **[📦 下载最新版 DeepSeekMonitor.exe](../../releases/latest)**
+👉 **[📦 下载最新版 DeepSeekMonitor.exe](https://github.com/fatemarcus-hub/deepseek-monitor/releases/latest)**
 
 下载后双击运行即可，程序自动在通知区显示托盘图标。
 
 ### 从源码运行
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/deepseek-monitor.git
+git clone https://github.com/fatemarcus-hub/deepseek-monitor.git
 cd deepseek-monitor
 pip install -r requirements.txt
 python run.py
