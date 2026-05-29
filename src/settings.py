@@ -83,6 +83,16 @@ input:focus, select:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22
 </div>
 
 <div class="section">
+<div class="section-title">Token 统计（可选）</div>
+<label>服务器地址</label>
+<input type="text" id="tokenServer" placeholder="http://你的服务器IP:18799">
+<label class="hint">填入云服务器上 token_server.py 的地址。留空则在本地统计（仅服务器端可用）</label>
+<label>鉴权密钥</label>
+<input type="text" id="tokenServerAuth" placeholder="与 --token 参数一致">
+<label class="hint">仅当服务器设置了 --token 时才需要填写</label>
+</div>
+
+<div class="section">
 <div class="section-title">警告设置</div>
 <label>余额不足警告阈值</label>
 <input type="number" id="warning" min="1" max="10000" step="1">
@@ -103,6 +113,8 @@ document.getElementById('apiKey').value = config.api_key || '';
 document.getElementById('currency').value = config.currency || 'CNY';
 document.getElementById('interval').value = config.refresh_interval || 300;
 document.getElementById('warning').value = config.low_balance_warning || 10;
+document.getElementById('tokenServer').value = config.token_server || '';
+document.getElementById('tokenServerAuth').value = config.token_server_auth || '';
 
 if (isFirstRun) {
 document.getElementById('pageSubtitle').textContent = '首次使用，请设置 DeepSeek API Key';
@@ -138,6 +150,8 @@ api_key: document.getElementById('apiKey').value.trim(),
 currency: document.getElementById('currency').value,
 refresh_interval: parseInt(document.getElementById('interval').value) || 300,
 low_balance_warning: parseFloat(document.getElementById('warning').value) || 10,
+token_server: document.getElementById('tokenServer').value.trim(),
+token_server_auth: document.getElementById('tokenServerAuth').value.trim(),
 };
 if (!payload.api_key) { showToast('请输入 API Key', 'error'); return; }
 fetch('/save', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })

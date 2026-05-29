@@ -1,10 +1,6 @@
 # 🔍 DeepSeek Monitor
 
 <p align="center">
-  <img src="assets/icon.ico" width="72" height="72" alt="DeepSeek Monitor Icon">
-</p>
-
-<p align="center">
   <b>Windows 任务栏常驻工具 — 实时监控 DeepSeek API 余额 & Token 消耗</b>
 </p>
 
@@ -20,31 +16,21 @@
 
 - 📊 **托盘图标实时显示余额** — 不用打开网页，一眼看到余额
 - 💬 **悬浮 tooltip** — 鼠标悬停查看 余额 / 今日消耗 / 更新时间
-- 🔢 **当日 Token 消耗估算** — 基于余额变化自动推算
+- 🔢 **精准 Token 统计（v2 新增）** — 从 OpenClaw session 日志直接读取，不靠估算
+- 🌐 **远程服务器模式（v2 新增）** — 监控云服务器上的 DeepSeek 消耗
 - ⏱️ **可自定义刷新间隔** — 默认每 5 分钟自动刷新
 - ⚠️ **余额不足警告** — 低于阈值图标变橙色，归零变红色
 - 🔧 **图形化设置界面** — 支持测试 API 连接
-- 🚀 **一键安装脚本** — 自动配置依赖 + 桌面快捷方式 + 开机自启
 
 ---
 
-## 📸 截图
+## 📥 快速开始
 
-### 任务栏悬浮提示
-<img src="assets/screenshots/tooltip.png" width="400" alt="任务栏悬浮">
+### 下载 EXE（无需 Python）
 
-### 设置界面
-<img src="assets/screenshots/settings.png" width="400" alt="设置界面">
+👉 **[📦 下载最新版](https://github.com/fatemarcus-hub/deepseek-monitor/releases/latest)**
 
----
-
-## 📥 下载
-
-### 直接下载 EXE（无需 Python）
-
-👉 **[📦 下载最新版 DeepSeekMonitor.exe](https://github.com/fatemarcus-hub/deepseek-monitor/releases/latest)**
-
-下载后双击运行即可，程序自动在通知区显示托盘图标。
+下载 `DeepSeekMonitor.exe`，双击运行。首次自动弹出设置窗口，填入 DeepSeek API Key 即可使用。
 
 ### 从源码运行
 
@@ -57,121 +43,140 @@ python run.py
 
 ---
 
-## 📋 系统要求
+## 🌐 远程服务器模式（监控云服务器上的消耗）
 
-- **Windows 10 / 11**
-- Python 3.8 或更高版本（源码运行时需要；直接使用 EXE 则不需要）
-- DeepSeek API Key → [创建入口](https://platform.deepseek.com/api_keys)
+如果你的 DeepSeek 调用跑在云服务器上（比如通过 OpenClaw 等 Agent 框架），Monitor 可以通过网络查询服务器的**实时 Token 消耗**。
+
+### 架构
+
+```
+┌─────────────────┐        HTTP         ┌──────────────────┐
+│  云服务器 (Linux) │  ←─── GET /tokens ── │  你的 Windows PC   │
+│  token_server.py │  ──── JSON 响应 ──→ │  DeepSeek Monitor  │
+└─────────────────┘                      └──────────────────┘
+```
+
+### 服务器端（只需 2 步）
+
+**1. 把 `token_server.py` 上传到服务器**
+
+```bash
+scp token_server.py root@你的服务器IP:~/deepseek-monitor/
+```
+
+**2. 启动 Token API 服务**
+
+```bash
+cd ~/deepseek-monitor
+nohup python3 token_server.py --port 18799 --token *** --bind 0.0.0.0 &
+```
+
+参数说明：
+- `--port`：监听端口（默认 18799）
+- `--token`：鉴权密钥，客户端需填入相同密钥
+- `--bind`：`0.0.0.0` 允许外部访问
+
+**3. 开放防火墙端口**
+
+云服务器控制台安全组 → 入站规则 → 放行 TCP `你选的端口`
+
+### 客户端（Monitor 设置）
+
+打开 Monitor → 右键托盘图标 → 设置 → 找到「Token 统计」区域：
+
+| 设置项 | 值 |
+|--------|-----|
+| 服务器地址 | `http://你的服务器IP:18799` |
+| 鉴权密钥 | 与服务器 `--token` 一致 |
+
+保存后 Monitor 自动从服务器拉取实时 Token 消耗。
+
+### 安全建议
+
+- ⚠️ 务必设置 `--token` 鉴权密钥
+- 🔒 建议使用 SSH 隧道代替公网直连（更安全）：
+  ```bash
+  ssh -L 18799:127.0.0.1:18799 root@服务器IP -N
+  ```
+  然后 Monitor 服务器地址填 `http://127.0.0.1:18799`
 
 ---
 
-## 🚀 安装
-
-### 方式一：EXE 直接运行（推荐）
-
-下载 `DeepSeekMonitor.exe`，双击启动。首次运行会自动弹出设置窗口要求填入 API Key。
-
-### 方式二：一键安装脚本
-
-```
-双击运行 setup.bat
-```
-
-脚本会自动：
-1. 检查 Python 环境
-2. 安装依赖（pystray / Pillow / requests）
-3. 创建桌面快捷方式
-4. 询问是否开机自启
-
----
-
-## 🖱️ 使用
-
-### 托盘图标状态
+## 🖱️ 托盘图标 & 菜单
 
 | 图标 | 含义 |
 |------|------|
-| 🟢 绿色数字 | 余额正常，数字为余额简写（如 `1.2K` = ≈1200 元） |
+| 🟢 绿色数字 | 余额正常（如 `1.2K` ≈ ¥1,200） |
 | 🟠 橙色 `!` | 余额低于警告阈值（默认 < ¥10） |
 | 🔴 红色 `X` | 余额为 0 或 API 连接失败 |
-| ⏳ 灰色 `..` | 加载中 / 查询中 |
+| ⏳ 灰色 `..` | 查询中 |
 
-### 右键菜单
+右键菜单显示：余额明细、今日 Token 消耗、状态、刷新时间、刷新/设置/退出。
 
-- 显示当前余额明细（充值余额 / 赠送余额）
-- 显示当日预估 Token 消耗
-- **刷新** — 手动立即查询
-- **设置** — 打开设置网页
-- **退出** — 关闭程序
+---
 
-### 设置项
+## ⚙️ 设置项
 
-| 设置 | 说明 | 默认值 |
-|------|------|--------|
+| 设置 | 说明 | 默认 |
+|------|------|------|
 | API Key | DeepSeek API 密钥 | — |
 | 货币单位 | CNY / USD | CNY |
-| 刷新间隔 | 秒 | 300（5 分钟） |
+| 刷新间隔 | 秒 | 300 |
 | 警告阈值 | 低于此金额变橙色 | ¥10 |
+| 服务器地址 | Token 统计服务器（远程模式） | 留空 |
+| 鉴权密钥 | 服务器鉴权密钥 | 留空 |
 
 ---
 
-## 🧮 Token 消耗估算原理
+## 🧮 Token 统计原理
 
-DeepSeek 暂未开放 Token usage API，所以用**余额变化**推算：
+### 本地模式（服务器上运行）
+直接从 OpenClaw session JSONL 文件中提取每条 API 调用的 `usage.totalTokens`，精确到个位数。
 
-```
-当日 Token 消耗 ≈ (今日首次余额 - 当前余额) ÷ 混合均价 × 1,000,000
-```
+### 远程模式（Windows 客户端）
+通过 HTTP 查询云服务器上的 `token_server.py`，服务器端使用相同的 session 扫描逻辑，返回累计 Token 数。
 
-- 均价按输入/输出混合约 ¥4/百万 Token 估算
-- 每天 0 点自动重置
-- 常规使用场景精度足够
+> 两种模式均**不依赖余额推算**，数据直接来自 DeepSeek API 返回的 usage 字段。
 
 ---
 
-## 📁 项目结构
+## 📁 文件结构
 
 ```
 deepseek-monitor/
-├── run.py              # 入口
-├── run.bat             # 双击启动（无控制台窗口）
-├── setup.bat           # 一键安装脚本
-├── install.py          # 安装逻辑
-├── requirements.txt    # Python 依赖
-├── .gitignore
-├── LICENSE
-├── README.md
+├── run.py                 # 程序入口
+├── token_server.py        # 🆕 Token API 服务器（部署在云服务器上）
+├── requirements.txt       # Python 依赖
+├── setup.bat              # 一键安装（Windows）
+├── run.bat                # 无控制台启动（Windows）
+├── install.py             # 安装逻辑
 ├── assets/
 │   ├── icon.ico
 │   └── screenshots/
-│       ├── tooltip.png
-│       └── settings.png
 └── src/
-    ├── main.py         # 主程序入口
-    ├── tray.py         # 系统托盘管理
-    ├── api.py          # DeepSeek API 交互
-    ├── config.py       # 配置 & 历史记录
-    └── settings.py     # Web 设置界面
+    ├── main.py            # 主程序
+    ├── tray.py            # 系统托盘
+    ├── api.py             # DeepSeek API（查询余额）
+    ├── config.py          # 配置管理
+    ├── settings.py        # Web 设置界面
+    └── session_tracker.py # 🆕 Session 日志扫描（精准 Token 统计）
 ```
 
 ---
 
 ## 🙋 FAQ
 
-**托盘图标不在任务栏显示？**  
-点击任务栏 `^` 箭头展开隐藏图标区，把 DeepSeek Monitor 拖到任务栏即可。
-
-**API Key 在哪里？**  
-登录 [DeepSeek Platform](https://platform.deepseek.com/api_keys) → 创建 API Key。
-
-**Token 消耗不准确？**  
-基于余额变化推算，多设备共用同一 Key 或充值/退款会影响精度。
+**Token 消耗不准？**  
+v2 已从余额推算改为 session 精准统计。如果使用远程模式，请确保服务器端 `token_server.py` 正在运行。
 
 **怎么卸载？**  
-删除程序文件夹即可。开机自启的话，再删掉 `shell:startup` 里的快捷方式。
+删除程序文件夹 + 删除 `shell:startup` 中的快捷方式。
 
-**运行日志在哪？**  
-`%APPDATA%/DeepSeekMonitor/logs/monitor.log`
+**运行日志？**  
+`%APPDATA%\DeepSeekMonitor\logs\monitor.log`
+
+**服务器端需要装什么？**  
+只需要 Python 3（标准库即可，无额外依赖）。
 
 ---
 

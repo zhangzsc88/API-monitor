@@ -1,17 +1,19 @@
 """
-DeepSeek Monitor - 纯托盘方案
+DeepSeek Monitor - 托盘程序
 悬停图标 → tooltip 显示余额/消耗/时间
 右键菜单 → 刷新/设置/退出
+Token 消耗从 OpenClaw session 日志精准统计（服务器上），Windows 上不可用
 """
 import threading
 import logging
 import time
-from datetime import datetime, date
+from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 import pystray
+import requests
 
-from .config import load_config, save_config, load_history, save_history, EST_PRICE_PER_M_TOKEN
-from .api import DeepSeekAPI, parse_balance, estimate_tokens_consumed
+from .config import load_config, save_config
+from .api import DeepSeekAPI, parse_balance
 
 logger = logging.getLogger("deepseek-monitor")
 
@@ -92,9 +94,8 @@ class DeepSeekMonitor:
             items.append(pystray.MenuItem("余额: 查询中...", None, enabled=False))
 
         if _state["today_tokens_ready"] and _state["today_tokens"]:
-            tok = _fmt(_state["today_tokens"])
             items.append(pystray.MenuItem(
-                f'今日消耗: {tok} tokens', None, enabled=False))
+                f'今日消耗: {_fmt(_state["today_tokens"])} tokens', None, enabled=False))
         elif _state["balance"] is not None:
             items.append(pystray.MenuItem("今日消耗: 收集中...", None, enabled=False))
         else:
@@ -191,42 +192,47 @@ class DeepSeekMonitor:
                 _state["status"] = "warning"
             else:
                 _state["status"] = "normal"
-            self._calc_daily(bal)
+            self._update_tokens()
             self._update_display()
 
-    def _calc_daily(self, bal):
-        h = load_history()
-        today = date.today().isoformat()
-        if h.get("day_start_date") != today:
-            h["day_start_date"] = today
-            h["day_start_balance"] = bal["total_balance"]
-            h["last_balance"] = bal["total_balance"]
-            _state["today_tokens"] = 0
-            _state["today_tokens_ready"] = False
-            save_history(h)
-            return
-        sb = h.get("day_start_balance")
-        if sb is None:
-            h["day_start_balance"] = bal["total_balance"]
-            _state["today_tokens"] = 0
-            _state["today_tokens_ready"] = False
-            save_history(h)
-            return
-        diff = sb - bal["total_balance"]
-        if diff < -0.001:
-            h["day_start_balance"] = bal["total_balance"]
-            _state["today_tokens"] = 0
-            _state["today_tokens_ready"] = False
-            save_history(h)
-            return
-        if diff > 0.0001:
-            _state["today_tokens"] = estimate_tokens_consumed(diff, EST_PRICE_PER_M_TOKEN)
-            _state["today_tokens_ready"] = True
-        elif not _state["today_tokens_ready"]:
-            _state["today_tokens"] = 0
-        h["last_balance"] = bal["total_balance"]
-        h["last_update"] = datetime.now().isoformat()
-        save_history(h)
+    def _update_tokens(self):
+        """获取今日 Token 消耗：优先远程服务器 → 本地 session 扫描"""
+        server = self.config.get("token_server", "").strip()
+        if server:
+            try:
+                headers = {}
+                auth = self.config.get("token_server_auth", "").strip()
+                if auth:
+                    headers["Authorization"] = f"Bearer {auth}"
+                url = f"{server.rstrip('/')}/tokens"
+                logger.info(f"查询远程 Token: {url}")
+                resp = requests.get(url, headers=headers, timeout=5)
+                logger.info(f"远程响应: {resp.status_code}")
+                if resp.status_code == 200:
+                    data = resp.json()
+                    tokens = data.get("total_tokens", 0)
+                    logger.info(f"远程 Token: {tokens:,}")
+                    if tokens > 0:
+                        _state["today_tokens"] = tokens
+                        _state["today_tokens_ready"] = True
+                        return
+                else:
+                    logger.warning(f"远程查询失败 HTTP {resp.status_code}: {resp.text[:100]}")
+            except Exception as e:
+                logger.warning(f"远程 Token 查询失败: {e}")
+
+        # 回退：本地 session 扫描
+        try:
+            from .session_tracker import scan_today_tokens
+            result = scan_today_tokens()
+            if result and result.get("total_tokens", 0) > 0:
+                _state["today_tokens"] = result["total_tokens"]
+                _state["today_tokens_ready"] = True
+                return
+        except Exception as e:
+            logger.debug(f"Session tracker 不可用: {e}")
+        if not _state["today_tokens_ready"]:
+            _state["today_tokens"] = None
 
     # ─── 定时 ───────────────────────────────────────────
 
@@ -258,12 +264,12 @@ class DeepSeekMonitor:
 
     def _on_saved(self, new_config):
         old_key = self.config.get("api_key")
+        old_server = self.config.get("token_server", "")
         self.config = new_config
         save_config(new_config)
         self.api = DeepSeekAPI(new_config["api_key"]) if new_config["api_key"] else None
-        # 首次设置 API Key 后立即刷新
-        if new_config["api_key"] and not old_key:
-            threading.Thread(target=self._do_refresh, daemon=True).start()
+        # 任何设置变更都立即刷新
+        threading.Thread(target=self._do_refresh, daemon=True).start()
 
     def _on_quit(self, icon=None, item=None):
         self._running = False

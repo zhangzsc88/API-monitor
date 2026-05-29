@@ -18,21 +18,12 @@ HISTORY_FILE = CONFIG_DIR / "history.json"
 DEFAULT_CONFIG = {
     "api_key": "",
     "currency": "CNY",
-    "refresh_interval": 300,  # 秒，默认 5 分钟
-    "low_balance_warning": 10.0,  # 低于此金额（元）显示警告
+    "refresh_interval": 300,       # 秒，默认 5 分钟
+    "low_balance_warning": 10.0,   # 低于此金额（元）显示警告
+    "token_server": "",             # Token 统计服务器地址，如 http://1.2.3.4:18799
+    "token_server_auth": "",        # 服务器鉴权密钥
     "first_run": True,
 }
-
-# DeepSeek V4 Pro 价格 (CNY / 1M tokens) — 作为估算基准
-# 输入: ¥2 / 1M tokens, 输出: ¥8 / 1M tokens
-# 这里用加权平均 ~¥5 / 1M tokens 来估算
-PRICE_PER_M_TOKEN_CNY = {
-    "input": 2.0,
-    "output": 8.0,
-    "cached_input": 0.5,
-}
-# 估算时用混合均价 ¥4 / 1M tokens
-EST_PRICE_PER_M_TOKEN = 4.0
 
 
 def ensure_config_dir():
