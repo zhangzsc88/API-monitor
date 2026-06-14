@@ -4,6 +4,7 @@ API Monitor - Provider 注册表
 from ..models import AccountConfig
 from .base import BaseProvider
 from .deepseek import DeepSeekProvider
+from .jdcloud import JDCloudProvider
 from .minimax_token import MiniMaxTokenProvider
 from .mimo import MiMoProvider
 from .siliconflow import SiliconFlowProvider
@@ -11,6 +12,7 @@ from .siliconflow import SiliconFlowProvider
 # 类型 → Provider 类的映射
 ALL_PROVIDERS: dict[str, type[BaseProvider]] = {
     "deepseek": DeepSeekProvider,
+    "jdcloud": JDCloudProvider,
     "minimax_token": MiniMaxTokenProvider,
     "mimo": MiMoProvider,
     "siliconflow": SiliconFlowProvider,

@@ -2,6 +2,27 @@
 
 > 项目基于 [DeepSeek Monitor](https://github.com/zhangzsc88/API-monitor) 二开
 
+## v2.2.0 - 2026-06-14
+
+### 新增
+
+- **硅基流动 SiliconFlow** Provider：API Key 认证，查询余额（总余额/可用余额/充值余额）
+- **京东云 JoyBuilder** Provider：Cookie 认证（thor + pin），查询 5h/7天/月多周期剩余百分比
+- 设置页面 Cookie 获取教程：MiMo 和京东云均提供可展开的图文步骤指引
+- `_cookiePreview()` 通用函数，替代原 `_mimoCookiePreview()`，支持所有 Cookie 认证平台
+
+### 变更
+
+- `ALL_PROVIDERS` 新增 siliconflow / jdcloud，完整列表：deepseek / jdcloud / minimax_token / mimo / siliconflow
+- 设置页面 `addAccount()` / `saveEdit()` / `testAccount()` / `_handle_test()` 全部适配京东云 Cookie 字段
+- `renderAccounts()` 编辑表单支持京东云 Cookie 编辑（thor / pin）
+
+### 已知限制更新
+
+- ~~京东云 Coding Plan 无公开 API，暂不支持~~ → 已通过 Cookie + describeUserActivePlan 接口实现
+
+---
+
 ## v2.1.0 - 2026-06-14
 
 ### 新增
@@ -45,7 +66,7 @@
 
 ### 已知限制
 
-- 京东云 Coding Plan 无公开 API，暂不支持
 - MiniMax 按量计费（积分）余额无公开查询 API
 - 小米 MiMo Cookie 有效期约 24 小时，需手动刷新
+- 京东云 JoyBuilder Cookie 有效期较长，过期需重新获取
 - 无历史数据记录/趋势图

@@ -85,6 +85,11 @@ input:focus, select:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22
 .add-form.visible { display: block; }
 .edit-form { display: none; margin-top: 8px; }
 .edit-form.visible { display: block; }
+kbd { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; border: 1px solid #d9d9d9; font-size: 12px; }
+details summary { list-style: none; cursor: pointer; }
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: '▶ '; font-size: 10px; }
+details[open] summary::before { content: '▼ '; }
 </style>
 </head>
 <body>
@@ -150,6 +155,7 @@ input:focus, select:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22
 </div>
 <div class="field-group" id="addCookieGroup" style="display:none;">
 <label style="font-weight:600;margin-bottom:8px;">Cookie 字段（从浏览器 DevTools 获取）</label>
+<div id="addCookieMiMoFields" style="display:none;">
 <div class="field-group">
 <label>userId</label>
 <input type="text" id="addCookieUserId" placeholder="从 Cookie 中获取 userId 的值">
@@ -162,7 +168,48 @@ input:focus, select:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22
 <label>api-platform_serviceToken</label>
 <input type="text" id="addCookieApiPlatformST" placeholder="从 Cookie 中获取 api-platform_serviceToken 的值">
 </div>
-<div class="helper">打开 platform.xiaomimimo.com → F12 → Application → Cookies，复制对应字段的值填入即可</div>
+<details style="margin-top:8px;">
+<summary style="font-size:13px;color:#1677ff;font-weight:500;">如何获取小米 MiMo Cookie？</summary>
+<div style="font-size:12px;color:#666;padding:8px 0;line-height:1.8;">
+<strong>步骤：</strong><br>
+1. 打开 <a href="https://platform.xiaomimimo.com/" target="_blank" style="color:#1677ff;">小米 MiMo 平台</a> 并登录<br>
+2. 按 <kbd>F12</kbd> 打开开发者工具<br>
+3. 切换到 <kbd>Application</kbd> 标签 → 左侧 <kbd>Cookies</kbd> → 选择 <code>platform.xiaomimimo.com</code><br>
+4. 找到 <code>userId</code>、<code>serviceToken</code>、<code>api-platform_serviceToken</code> 三行，双击 <kbd>Value</kbd> 列复制值<br>
+5. 粘贴到上方对应输入框<br>
+<br>
+<strong>提示：</strong><br>
+- Cookie 有效期约 24 小时，过期需重新获取<br>
+- API Key（tp-xxxxx）<strong>不支持</strong>用量查询，仅用于调用模型 API
+</div>
+</details>
+</div>
+<div id="addCookieJDCloudFields" style="display:none;">
+<div class="field-group">
+<label>thor</label>
+<input type="text" id="addCookieThor" placeholder="从 Cookie 中获取 thor 的值">
+</div>
+<div class="field-group">
+<label>pin</label>
+<input type="text" id="addCookiePin" placeholder="从 Cookie 中获取 pin 的值">
+</div>
+<details style="margin-top:8px;">
+<summary style="font-size:13px;color:#1677ff;font-weight:500;">如何获取京东云 Cookie？</summary>
+<div style="font-size:12px;color:#666;padding:8px 0;line-height:1.8;">
+<strong>步骤：</strong><br>
+1. 打开 <a href="https://joybuilder-console.jdcloud.com/system/subscribe/list" target="_blank" style="color:#1677ff;">京东云 JoyBuilder 控制台</a> 并登录<br>
+2. 按 <kbd>F12</kbd> 打开开发者工具<br>
+3. 切换到 <kbd>Application</kbd> 标签 → 左侧 <kbd>Cookies</kbd> → 选择 <code>joybuilder-console.jdcloud.com</code><br>
+4. 找到 <code>thor</code> 和 <code>pin</code> 两行，双击 <kbd>Value</kbd> 列复制值<br>
+5. 粘贴到上方对应输入框<br>
+<br>
+<strong>提示：</strong><br>
+- Cookie 有效期较长，通常几周内有效<br>
+- 过期后重新登录并按上述步骤获取即可<br>
+- 只需 <code>thor</code> 和 <code>pin</code> 两个字段，其他 Cookie 不需要
+</div>
+</details>
+</div>
 </div>
 <div class="field-group">
 <label>自定义预警阈值（可选，留空使用全局设置）</label>
@@ -232,12 +279,13 @@ function renderAccounts() {
                     '<button class="btn btn-danger btn-sm" onclick="deleteAccount(' + idx + ')">删除</button>' +
                 '</div>' +
             '</div>' +
-            '<div style="font-size:13px;color:#666;">' + (acc.type === 'mimo' && acc.extra ? ('Cookie: ' + escHtml(_mimoCookiePreview(acc.extra))) : 'API Key: ' + escHtml(maskedKey)) + '</div>' +
+            '<div style="font-size:13px;color:#666;">' + ((acc.type === 'mimo' || acc.type === 'jdcloud') && acc.extra ? ('Cookie: ' + escHtml(_cookiePreview(acc.type, acc.extra))) : 'API Key: ' + escHtml(maskedKey)) + '</div>' +
             (acc.warning_threshold != null ? '<div style="font-size:12px;color:#888;">自定义阈值: ' + acc.warning_threshold + '</div>' : '') +
             '<div id="editForm_' + idx + '" class="edit-form">' +
                 '<div class="field-group"><label>名称</label><input type="text" id="editName_' + idx + '" value="' + escAttr(acc.name) + '"></div>' +
-                '<div class="field-group"><label>' + (acc.type === 'mimo' ? 'API Key（仅标识）' : 'API Key') + '</label><input type="text" id="editKey_' + idx + '" value="' + escAttr(acc.api_key) + '" placeholder="留空保持不变"></div>' +
+                '<div class="field-group"><label>' + ((acc.type === 'mimo' || acc.type === 'jdcloud') ? 'API Key（仅标识）' : 'API Key') + '</label><input type="text" id="editKey_' + idx + '" value="' + escAttr(acc.api_key) + '" placeholder="留空保持不变"></div>' +
                 (acc.type === 'mimo' ? '<div class="field-group"><label style="font-weight:600;">Cookie 字段</label><div class="field-group"><label>userId</label><input type="text" id="editCookie_userId_' + idx + '" value="' + escAttr(acc.extra && acc.extra.cookie_userId ? acc.extra.cookie_userId : '') + '" placeholder="userId 的值"></div><div class="field-group"><label>serviceToken</label><input type="text" id="editCookie_serviceToken_' + idx + '" value="' + escAttr(acc.extra && acc.extra.cookie_serviceToken ? acc.extra.cookie_serviceToken : '') + '" placeholder="serviceToken 的值"></div><div class="field-group"><label>api-platform_serviceToken</label><input type="text" id="editCookie_api_platform_serviceToken_' + idx + '" value="' + escAttr(acc.extra && acc.extra.cookie_api_platform_serviceToken ? acc.extra.cookie_api_platform_serviceToken : '') + '" placeholder="api-platform_serviceToken 的值"></div><div class="helper">Cookie 有效期约 24 小时，过期需重新获取</div></div>' : '') +
+                (acc.type === 'jdcloud' ? '<div class="field-group"><label style="font-weight:600;">Cookie 字段</label><div class="field-group"><label>thor</label><input type="text" id="editCookie_thor_' + idx + '" value="' + escAttr(acc.extra && acc.extra.cookie_thor ? acc.extra.cookie_thor : '') + '" placeholder="thor 的值"></div><div class="field-group"><label>pin</label><input type="text" id="editCookie_pin_' + idx + '" value="' + escAttr(acc.extra && acc.extra.cookie_pin ? acc.extra.cookie_pin : '') + '" placeholder="pin 的值"></div><div class="helper">Cookie 有效期较长，过期需重新获取</div></div>' : '') +
                 '<div class="field-group"><label>自定义预警阈值（留空使用全局）</label><input type="number" id="editThreshold_' + idx + '" value="' + (acc.warning_threshold != null ? acc.warning_threshold : '') + '" step="0.1"></div>' +
                 '<div class="row" style="margin-top:8px;">' +
                     '<button class="btn btn-primary btn-sm" onclick="saveEdit(' + idx + ')">保存</button>' +
@@ -263,12 +311,17 @@ function onTypeChange() {
     providerTypes.forEach(function(p) { if (p.type === type) label = p.label; });
     document.getElementById('addName').placeholder = label + ' 账号';
 
-    // MiMo 使用 Cookie 认证，其他使用 API Key
-    var isCookie = (type === 'mimo');
-    document.getElementById('addKeyLabel').textContent = isCookie ? 'API Key（仅标识用）' : 'API Key';
-    document.getElementById('addApiKey').placeholder = isCookie ? 'tp-... (仅用于标识)' : 'sk-...';
-    document.getElementById('addKeyHelper').textContent = isCookie ? 'MiMo 用量查询需要 Cookie，请在下方填写' : '';
+    // Cookie 认证的平台
+    var isCookie = (type === 'mimo' || type === 'jdcloud');
+    var isMiMo = (type === 'mimo');
+    var isJDCloud = (type === 'jdcloud');
+
+    document.getElementById('addKeyLabel').textContent = isCookie ? 'API Key（仅标识用，可留空）' : 'API Key';
+    document.getElementById('addApiKey').placeholder = isCookie ? '可留空' : 'sk-...';
+    document.getElementById('addKeyHelper').textContent = isCookie ? '用量查询需要 Cookie，请在下方填写' : '';
     document.getElementById('addCookieGroup').style.display = isCookie ? 'block' : 'none';
+    document.getElementById('addCookieMiMoFields').style.display = isMiMo ? 'block' : 'none';
+    document.getElementById('addCookieJDCloudFields').style.display = isJDCloud ? 'block' : 'none';
 }
 
 function addAccount() {
@@ -278,13 +331,18 @@ function addAccount() {
     var threshold = document.getElementById('addThreshold').value;
 
     if (!name) { showToast('请输入名称', 'error'); return; }
-    if (!apiKey && type !== 'mimo') { showToast('请输入 API Key', 'error'); return; }
+    if (!apiKey && type !== 'mimo' && type !== 'jdcloud') { showToast('请输入 API Key', 'error'); return; }
 
-    // MiMo Cookie 分字段验证
+    // Cookie 认证平台分字段验证
     if (type === 'mimo') {
         var st = document.getElementById('addCookieServiceToken').value.trim();
         var uid = document.getElementById('addCookieUserId').value.trim();
         if (!st && !uid) { showToast('请至少填写一个 Cookie 字段', 'error'); return; }
+    }
+    if (type === 'jdcloud') {
+        var thor = document.getElementById('addCookieThor').value.trim();
+        var pin = document.getElementById('addCookiePin').value.trim();
+        if (!thor && !pin) { showToast('请至少填写一个 Cookie 字段', 'error'); return; }
     }
 
     // 生成唯一 ID
@@ -303,6 +361,16 @@ function addAccount() {
             if (cookieFields[k]) acc.extra[k] = cookieFields[k];
         });
     }
+    // JDCloud: 存储分字段 Cookie
+    if (type === 'jdcloud') {
+        var jdCookieFields = {
+            cookie_thor: document.getElementById('addCookieThor').value.trim(),
+            cookie_pin: document.getElementById('addCookiePin').value.trim()
+        };
+        Object.keys(jdCookieFields).forEach(function(k) {
+            if (jdCookieFields[k]) acc.extra[k] = jdCookieFields[k];
+        });
+    }
     if (threshold !== '') {
         acc.warning_threshold = parseFloat(threshold);
     }
@@ -315,6 +383,8 @@ function addAccount() {
     document.getElementById('addCookieUserId').value = '';
     document.getElementById('addCookieServiceToken').value = '';
     document.getElementById('addCookieApiPlatformST').value = '';
+    document.getElementById('addCookieThor').value = '';
+    document.getElementById('addCookiePin').value = '';
     document.getElementById('addThreshold').value = '';
     toggleAddForm();
     renderAccounts();
@@ -352,12 +422,12 @@ function saveEdit(idx) {
     // MiMo Cookie 编辑（分字段）
     if (acc.type === 'mimo') {
         if (!acc.extra) acc.extra = {};
-        var cookieFieldIds = [
+        var mimoCookieFieldIds = [
             ['cookie_userId', 'editCookie_userId_'],
             ['cookie_serviceToken', 'editCookie_serviceToken_'],
             ['cookie_api_platform_serviceToken', 'editCookie_api_platform_serviceToken_']
         ];
-        cookieFieldIds.forEach(function(pair) {
+        mimoCookieFieldIds.forEach(function(pair) {
             var el = document.getElementById(pair[1] + idx);
             if (el) {
                 var val = el.value.trim();
@@ -369,6 +439,27 @@ function saveEdit(idx) {
             }
         });
         // 清理旧格式 cookie 字段（迁移后不再需要）
+        delete acc.extra.cookie;
+    }
+
+    // JDCloud Cookie 编辑（分字段）
+    if (acc.type === 'jdcloud') {
+        if (!acc.extra) acc.extra = {};
+        var jdCookieFieldIds = [
+            ['cookie_thor', 'editCookie_thor_'],
+            ['cookie_pin', 'editCookie_pin_']
+        ];
+        jdCookieFieldIds.forEach(function(pair) {
+            var el = document.getElementById(pair[1] + idx);
+            if (el) {
+                var val = el.value.trim();
+                if (val) {
+                    acc.extra[pair[0]] = val;
+                } else {
+                    delete acc.extra[pair[0]];
+                }
+            }
+        });
         delete acc.extra.cookie;
     }
 
@@ -385,43 +476,72 @@ function testAccount(idx) {
     statusEl.textContent = 'Testing...';
     statusEl.className = 'test-status';
 
-    // MiMo 需要传 Cookie（分字段拼成字符串）
+    // Cookie 认证平台：拼 Cookie 字符串
     var cookie = '';
     if (acc.type === 'mimo') {
         var cookieParts = [];
-        var cookieFieldIds = [
+        var mimoCookieFieldIds = [
             ['cookie_userId', 'editCookie_userId_'],
             ['cookie_serviceToken', 'editCookie_serviceToken_'],
             ['cookie_api_platform_serviceToken', 'editCookie_api_platform_serviceToken_']
         ];
-        cookieFieldIds.forEach(function(pair) {
+        mimoCookieFieldIds.forEach(function(pair) {
             var el = document.getElementById(pair[1] + idx);
             var val = el ? el.value.trim() : (acc.extra && acc.extra[pair[0]] ? acc.extra[pair[0]] : '');
             if (val) {
-                // pair[0] 形如 cookie_userId → Cookie key 是 userId
-                var cookieKey = pair[0].replace(/^cookie_/, '').replace(/_/, '_');
-                // cookie_api_platform_serviceToken → api-platform_serviceToken
+                var cookieKey = pair[0].replace(/^cookie_/, '');
                 if (cookieKey === 'api_platform_serviceToken') cookieKey = 'api-platform_serviceToken';
                 cookieParts.push(cookieKey + '=' + val);
             }
         });
-        // 兼容：如果没有分字段但旧格式 cookie 存在
         if (!cookieParts.length && acc.extra && acc.extra.cookie) {
             cookie = acc.extra.cookie;
         } else {
             cookie = cookieParts.join('; ');
         }
     }
+    if (acc.type === 'jdcloud') {
+        var jdCookieParts = [];
+        var jdCookieFieldIds = [
+            ['cookie_thor', 'editCookie_thor_'],
+            ['cookie_pin', 'editCookie_pin_']
+        ];
+        jdCookieFieldIds.forEach(function(pair) {
+            var el = document.getElementById(pair[1] + idx);
+            var val = el ? el.value.trim() : (acc.extra && acc.extra[pair[0]] ? acc.extra[pair[0]] : '');
+            if (val) {
+                var cookieKey = pair[0].replace(/^cookie_/, '');
+                jdCookieParts.push(cookieKey + '=' + val);
+            }
+        });
+        if (!jdCookieParts.length && acc.extra && acc.extra.cookie) {
+            cookie = acc.extra.cookie;
+        } else {
+            cookie = jdCookieParts.join('; ');
+        }
+    }
 
     var testBody = {type: acc.type, api_key: apiKey, cookie: cookie};
     // MiMo: 同时传递分字段（优先级高于 cookie 字符串）
     if (acc.type === 'mimo') {
-        var fieldMap = [
+        var mimoFieldMap = [
             ['cookie_userId', 'editCookie_userId_'],
             ['cookie_serviceToken', 'editCookie_serviceToken_'],
             ['cookie_api_platform_serviceToken', 'editCookie_api_platform_serviceToken_']
         ];
-        fieldMap.forEach(function(pair) {
+        mimoFieldMap.forEach(function(pair) {
+            var el = document.getElementById(pair[1] + idx);
+            var val = el ? el.value.trim() : (acc.extra && acc.extra[pair[0]] ? acc.extra[pair[0]] : '');
+            if (val) testBody[pair[0]] = val;
+        });
+    }
+    // JDCloud: 同时传递分字段
+    if (acc.type === 'jdcloud') {
+        var jdFieldMap = [
+            ['cookie_thor', 'editCookie_thor_'],
+            ['cookie_pin', 'editCookie_pin_']
+        ];
+        jdFieldMap.forEach(function(pair) {
             var el = document.getElementById(pair[1] + idx);
             var val = el ? el.value.trim() : (acc.extra && acc.extra[pair[0]] ? acc.extra[pair[0]] : '');
             if (val) testBody[pair[0]] = val;
@@ -478,12 +598,17 @@ function saveSettings() {
 
 function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function escAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function _mimoCookiePreview(extra) {
+function _cookiePreview(type, extra) {
     if (!extra) return '(未设置)';
     var parts = [];
-    if (extra.cookie_userId) parts.push('userId=已填');
-    if (extra.cookie_serviceToken) parts.push('serviceToken=已填');
-    if (extra.cookie_api_platform_serviceToken) parts.push('api-platform_serviceToken=已填');
+    if (type === 'mimo') {
+        if (extra.cookie_userId) parts.push('userId=已填');
+        if (extra.cookie_serviceToken) parts.push('serviceToken=已填');
+        if (extra.cookie_api_platform_serviceToken) parts.push('api-platform_serviceToken=已填');
+    } else if (type === 'jdcloud') {
+        if (extra.cookie_thor) parts.push('thor=已填');
+        if (extra.cookie_pin) parts.push('pin=已填');
+    }
     if (parts.length) return parts.join(', ');
     if (extra.cookie) return extra.cookie.substring(0, 20) + '...';
     return '(未设置)';
@@ -591,6 +716,9 @@ class SettingsHandler(BaseHTTPRequestHandler):
         cookie_userId = data.get("cookie_userId", "")
         cookie_serviceToken = data.get("cookie_serviceToken", "")
         cookie_api_platform_serviceToken = data.get("cookie_api_platform_serviceToken", "")
+        # JDCloud 分字段格式
+        cookie_thor = data.get("cookie_thor", "")
+        cookie_pin = data.get("cookie_pin", "")
 
         if not provider_type:
             self._json_response({"ok": False, "error": "缺少参数"})
@@ -601,12 +729,18 @@ class SettingsHandler(BaseHTTPRequestHandler):
             extra = {}
             if cookie:
                 extra["cookie"] = cookie
+            # MiMo 字段
             if cookie_userId:
                 extra["cookie_userId"] = cookie_userId
             if cookie_serviceToken:
                 extra["cookie_serviceToken"] = cookie_serviceToken
             if cookie_api_platform_serviceToken:
                 extra["cookie_api_platform_serviceToken"] = cookie_api_platform_serviceToken
+            # JDCloud 字段
+            if cookie_thor:
+                extra["cookie_thor"] = cookie_thor
+            if cookie_pin:
+                extra["cookie_pin"] = cookie_pin
 
             temp_account = AccountConfig(
                 id="test",
