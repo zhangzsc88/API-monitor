@@ -1,7 +1,7 @@
 # 🔍 API Monitor
 
 <p align="center">
-  <b>Windows 任务栏常驻工具 — 实时监控多平台 API 余额 & Token 用量</b>
+  <b>Windows 任务栏常驻工具 — 实时监控多平台 API 余额</b>
 </p>
 
 <p align="center">
@@ -53,7 +53,7 @@ python run.py
 
 | 图标 | 含义 |
 |------|------|
-| 🟢 绿色数字 | 余额/剩余正常 |
+| 🔴 红色 **M** | 余额/剩余正常 |
 | 🟠 橙色 `!` | 低于警告阈值 |
 | 🔴 红色 `X` | 余额归零或连接失败 |
 | ⏳ 灰色 `..` | 查询中 |
@@ -95,13 +95,12 @@ src/
 ├── config.py            # 配置管理（v1→v2 自动迁移）
 ├── settings.py          # Web 设置界面
 ├── models.py            # 数据模型
-├── providers/
-│   ├── __init__.py      # 注册表 + 工厂函数
-│   ├── base.py          # Provider 抽象基类
-│   ├── deepseek.py      # DeepSeek 余额查询
-│   ├── minimax_token.py # MiniMax Token Plan
-│   └── mimo.py          # 小米 MiMo（Cookie 认证）
-└── session_tracker.py   # Session 日志（暂未使用）
+└── providers/
+    ├── __init__.py      # 注册表 + 工厂函数
+    ├── base.py          # Provider 抽象基类
+    ├── deepseek.py      # DeepSeek 余额查询
+    ├── minimax_token.py # MiniMax Token Plan
+    └── mimo.py          # 小米 MiMo（Cookie 认证）
 ```
 
 ## 🔌 新增平台
