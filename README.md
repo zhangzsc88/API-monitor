@@ -28,6 +28,7 @@
 |------|---------|---------|------|
 | **DeepSeek** | API Key | 余额（¥） | 支持多账号 |
 | **MiniMax Token Plan** | Subscription Key (sk-cp-) | 剩余百分比 | 5h池 + 周池详情 |
+| **硅基流动 SiliconFlow** | API Key | 余额（¥） | 支持多账号 |
 | **小米 MiMo** | Cookie | 剩余百分比 | Cookie 有效期约 24h |
 
 ## 📥 快速开始
@@ -71,6 +72,12 @@ python run.py
 2. 设置页面选择 **MiniMax Token** → 填入 Key → 保存
 3. Tooltip 显示：5h 池剩余 + 周池剩余
 
+### 硅基流动 SiliconFlow
+
+1. 登录 [SiliconFlow](https://cloud.siliconflow.cn/) → 获取 API Key
+2. 设置页面选择 **硅基流动** → 填入 API Key → 保存
+3. Tooltip 显示：总余额、可用余额、充值余额
+
 ### 小米 MiMo
 
 1. 打开 [MiMo Platform](https://platform.xiaomimimo.com/) → F12 → Application → Cookies
@@ -98,6 +105,7 @@ src/
     ├── base.py          # Provider 抽象基类
     ├── deepseek.py      # DeepSeek 余额查询
     ├── minimax_token.py # MiniMax Token Plan
+    ├── siliconflow.py   # 硅基流动 SiliconFlow 余额查询
     └── mimo.py          # 小米 MiMo（Cookie 认证）
 ```
 

@@ -6,12 +6,14 @@ from .base import BaseProvider
 from .deepseek import DeepSeekProvider
 from .minimax_token import MiniMaxTokenProvider
 from .mimo import MiMoProvider
+from .siliconflow import SiliconFlowProvider
 
 # 类型 → Provider 类的映射
 ALL_PROVIDERS: dict[str, type[BaseProvider]] = {
     "deepseek": DeepSeekProvider,
     "minimax_token": MiniMaxTokenProvider,
     "mimo": MiMoProvider,
+    "siliconflow": SiliconFlowProvider,
 }
 
 
