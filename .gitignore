@@ -2,11 +2,15 @@
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 
 # Distribution (released via GitHub Releases, not committed)
 dist/
+build/
+*.spec
 
 # User data (generated at runtime)
+data/
 logs/
 *.log
 
@@ -19,3 +23,14 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+Desktop.ini
+
+# WorkBuddy (development tool)
+.workbuddy/
+
+# Temp scripts (debug/dump, not for production)
+python/
+
+# Windows null device
+nul
+*.backup
