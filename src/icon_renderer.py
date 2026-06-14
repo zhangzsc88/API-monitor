@@ -18,7 +18,7 @@ class IconRenderer:
     """根据多平台查询结果渲染托盘图标"""
 
     COLORS = {
-        StatusLevel.NORMAL: (229, 57, 53),       # 红色（品牌色）
+        StatusLevel.NORMAL: (67, 160, 71),       # 绿色
         StatusLevel.WARNING: (255, 152, 0),      # 橙色
         StatusLevel.ERROR: (229, 57, 53),        # 红色
         StatusLevel.LOADING: (158, 158, 158),    # 灰色
