@@ -30,8 +30,6 @@
 | **MiniMax Token Plan** | Subscription Key (sk-cp-) | 剩余百分比 | 5h池 + 周池详情 |
 | **小米 MiMo** | Cookie | 剩余百分比 | Cookie 有效期约 24h |
 
-> 💡 京东云 Coding Plan 暂无公开 API，MiniMax 按量计费（积分）余额无法通过 API 查询。
-
 ## 📥 快速开始
 
 ### 下载 EXE（无需 Python）
