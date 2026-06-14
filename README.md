@@ -119,6 +119,11 @@ src/
 - EXE 打包**不含任何硬编码凭证**
 - 配置文件与 EXE 同目录的 `data/` 子目录，方便管理
 
+## 🙏 致谢
+
+- **[fatemarcus-hub/deepseek-monitor](https://github.com/fatemarcus-hub/deepseek-monitor)** — 原始项目作者，DeepSeek Monitor 核心基础
+- 本项目基于原项目 Fork 后二开，扩展为多平台 API 余额监控工具
+
 ## 📝 License
 
-MIT — 基于 [DeepSeek Monitor](https://github.com/zhangzsc88/API-monitor) 二开。
+MIT — 本项目基于 [fatemarcus-hub/deepseek-monitor](https://github.com/fatemarcus-hub/deepseek-monitor)（MIT License）二次开发。
