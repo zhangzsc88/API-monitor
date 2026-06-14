@@ -34,14 +34,14 @@
 
 ### 下载 EXE（无需 Python）
 
-👉 **[📦 下载最新版](https://github.com/zhangzsc88/API-monitor/releases/latest)**
+👉 **[📦 下载最新版](https://github.com/katseven-zhang/API-monitor/releases/latest)**
 
 下载 `APIMonitor.exe`，双击运行。首次自动弹出设置页面，添加账号即可使用。
 
 ### 从源码运行
 
 ```bash
-git clone https://github.com/zhangzsc88/API-monitor.git
+git clone https://github.com/katseven-zhang/API-monitor.git
 cd API-monitor
 pip install -r requirements.txt
 python run.py
