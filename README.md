@@ -14,7 +14,7 @@
 
 ## ✨ 功能
 
-- 🖥️ **多平台监控** — DeepSeek、MiniMax、小米 MiMo、硅基流动、京东云 JoyBuilder，一个托盘全掌握
+- 🖥️ **多平台监控** — DeepSeek、MiniMax、小米 MiMo、硅基流动、京东云 JoyBuilder、讯飞星辰，一个托盘全掌握
 - 📊 **托盘图标实时显示** — 不用打开网页，一眼看到余额/剩余百分比
 - 💬 **悬浮 Tooltip** — 鼠标悬停查看各账号详情、更新时间
 - ⏱️ **自动刷新** — 可自定义间隔（默认 5 分钟）
@@ -30,6 +30,7 @@
 | **MiniMax Token Plan** | Subscription Key (sk-cp-) | 剩余百分比 | 5h池 + 周池详情 |
 | **硅基流动 SiliconFlow** | API Key | 余额（¥） | 支持多账号 |
 | **京东云 JoyBuilder** | Cookie | 剩余百分比 | 5h/7天/月多周期 |
+| **讯飞星辰** | Cookie | 剩余百分比 | 5h/周/月多周期，支持无忧版 |
 | **小米 MiMo** | Cookie | 剩余百分比 | Cookie 有效期约 24h |
 
 ## 📥 快速开始
@@ -100,6 +101,15 @@ python run.py
 
 > ⚠️ Cookie 有效期较长（通常几周），过期需重新登录获取。只需 `thor` 和 `pin` 两个字段即可。
 
+### 讯飞星辰
+
+1. 打开 [讯飞星辰 MaaS 套餐订阅](https://maas.xfyun.cn/packageSubscription) → F12 → Application → Cookies
+2. 找到以下字段，复制值：
+   - `ssoSessionId`
+3. 设置页面选择 **讯飞星辰** → 填入 ssoSessionId → 保存
+
+> ⚠️ 只需 `ssoSessionId` 一个字段即可。Cookie 与登录会话一致，过期需重新获取。
+
 ## 📁 文件结构
 
 ```
@@ -118,6 +128,7 @@ src/
     ├── jdcloud.py       # 京东云 JoyBuilder（Cookie 认证）
     ├── minimax_token.py # MiniMax Token Plan
     ├── siliconflow.py   # 硅基流动 SiliconFlow 余额查询
+    ├── xfyun.py         # 讯飞星辰（Cookie 认证）
     └── mimo.py          # 小米 MiMo（Cookie 认证）
 ```
 

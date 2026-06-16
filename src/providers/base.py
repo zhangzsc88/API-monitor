@@ -29,14 +29,16 @@ def format_balance(amount: float, symbol: str = "¥") -> str:
 
 def format_tokens(count: float) -> str:
     """
-    Token 数格式化
-    - < 1M: 直接显示数字
-    - >= 1M: 500M, 3.1B
+    Token 数格式化 — 始终显示具体数值 + 单位
+    - < 1K: 直接显示数字 (如 823)
+    - >= 1K: 823.4K, 1.2M, 3.1B
     """
-    if count < 1_000_000:
+    if count < 1_000:
         return f"{count:,.0f}"
+    elif count < 1_000_000:
+        return f"{count / 1_000:.1f}K"
     elif count < 1_000_000_000:
-        return f"{count / 1_000_000:.0f}M"
+        return f"{count / 1_000_000:.1f}M"
     else:
         return f"{count / 1_000_000_000:.1f}B"
 

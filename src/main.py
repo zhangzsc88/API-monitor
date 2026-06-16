@@ -7,6 +7,7 @@ import logging
 import traceback
 from pathlib import Path
 
+
 # 在 setup_logging 之前先解析日志目录（与 config 保持一致）
 def _resolve_log_dir() -> Path:
     env = os.environ.get("APIMONITOR_HOME")
@@ -37,6 +38,15 @@ def setup_logging():
     )
 
 
+def _global_exception_hook(exc_type, exc_value, exc_tb):
+    """全局未捕获异常钩子 — 防止进程静默崩溃"""
+    logger = logging.getLogger("api-monitor")
+    logger.critical(
+        f"未捕获异常 (线程): {exc_type.__name__}: {exc_value}",
+        exc_info=(exc_type, exc_value, exc_tb),
+    )
+
+
 def main():
     """程序入口"""
     setup_logging()
@@ -44,6 +54,13 @@ def main():
     logger.info("=" * 50)
     logger.info("API Monitor 启动")
     logger.info(f"应用数据目录: {_resolve_log_dir().parent}")
+
+    # 安装全局异常钩子，防止线程异常导致进程静默退出
+    sys.excepthook = _global_exception_hook
+    import threading
+    threading.excepthook = lambda args: _global_exception_hook(
+        args.exc_type, args.exc_value, args.exc_traceback
+    )
 
     try:
         from src.app import App

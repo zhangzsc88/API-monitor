@@ -2,6 +2,22 @@
 
 > 项目基于 [DeepSeek Monitor](https://github.com/zhangzsc88/API-monitor) 二开
 
+## v2.3.0 - 2026-06-15
+
+### 新增
+
+- **讯飞星辰** Provider：Cookie 认证（ssoSessionId），查询 Coding Plan 套餐用量（5h/周/月）
+- 支持无忧版（不限量）套餐识别，不限量时显示 100%
+- 设置页面讯飞星辰 Cookie 获取教程（可展开步骤指引）
+- `coding-plan/list` API 支持多套餐汇总，取最差周期剩余百分比
+
+### 变更
+
+- `ALL_PROVIDERS` 新增 xfyun，完整列表：deepseek / jdcloud / minimax_token / mimo / siliconflow / xfyun
+- settings.py 全面适配讯飞星辰（添加/编辑/测试/后端/教程/预览）
+
+---
+
 ## v2.2.0 - 2026-06-14
 
 ### 新增

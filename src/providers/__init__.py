@@ -8,6 +8,7 @@ from .jdcloud import JDCloudProvider
 from .minimax_token import MiniMaxTokenProvider
 from .mimo import MiMoProvider
 from .siliconflow import SiliconFlowProvider
+from .xfyun import XfyunProvider
 
 # 类型 → Provider 类的映射
 ALL_PROVIDERS: dict[str, type[BaseProvider]] = {
@@ -15,7 +16,8 @@ ALL_PROVIDERS: dict[str, type[BaseProvider]] = {
     "jdcloud": JDCloudProvider,
     "minimax_token": MiniMaxTokenProvider,
     "mimo": MiMoProvider,
-    "siliconflow": SiliconFlowProvider,
+    # "siliconflow": SiliconFlowProvider,  # 隐藏：余额API返回负数，代金券查询需Cookie但结果不准，待后续研究
+    "xfyun": XfyunProvider,
 }
 
 

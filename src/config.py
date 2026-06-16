@@ -51,6 +51,7 @@ DEFAULT_CONFIG = {
         "warning_threshold_balance": 10,
         "critical_threshold_percent": 5,
         "icon_display": "worst",
+        "show_floating_on_start": True,
     },
     "first_run": True,
 }

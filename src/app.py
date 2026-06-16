@@ -51,7 +51,7 @@ class App:
                     self._apply_threshold(result)
                     self.results[pid] = result
                 except Exception as e:
-                    logger.error(f"Provider {pid} 刷新异常: {e}")
+                    logger.error(f"Provider {pid} 刷新异常: {e}", exc_info=True)
                     self.results[pid] = ProviderResult(
                         provider_type=provider.PROVIDER_TYPE,
                         account_name=provider.account.name,
@@ -156,4 +156,5 @@ class App:
         """启动应用 → 创建 TrayIcon → run"""
         from .tray import TrayIcon
         tray = TrayIcon(self)
+        self._tray = tray
         tray.run()
