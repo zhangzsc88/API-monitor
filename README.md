@@ -14,9 +14,11 @@
 
 ## ✨ 功能
 
-- 🖥️ **多平台监控** — DeepSeek、MiniMax、小米 MiMo、硅基流动、京东云 JoyBuilder、讯飞星辰，一个托盘全掌握
+- 🖥️ **多平台监控** — DeepSeek、MiniMax、小米 MiMo、京东云 JoyBuilder、讯飞星辰，一个托盘全掌握
 - 📊 **托盘图标实时显示** — 不用打开网页，一眼看到余额/剩余百分比
+- 🪟 **悬浮窗** — 白底黑字半透明窗口，5档透明度可调，启动自动弹出
 - 💬 **悬浮 Tooltip** — 鼠标悬停查看各账号详情、更新时间
+- 📈 **DeepSeek 用量详情** — 平台 Token 模式查今日按模型输入/输出/命中/费用
 - ⏱️ **自动刷新** — 可自定义间隔（默认 5 分钟）
 - ⚠️ **余额不足预警** — 低于阈值图标变色提醒（橙色 → 红色）
 - 🔧 **Web 设置界面** — 浏览器中管理多账号，支持连接测试
@@ -26,12 +28,11 @@
 
 | 平台 | 认证方式 | 显示内容 | 备注 |
 |------|---------|---------|------|
-| **DeepSeek** | API Key | 余额（¥） | 支持多账号 |
+| **DeepSeek** | API Key + 平台 Token | 余额（¥）+ 今日用量详情 | 平台 Token 可查按模型命中/费用 |
 | **MiniMax Token Plan** | Subscription Key (sk-cp-) | 剩余百分比 | 5h池 + 周池详情 |
-| **硅基流动 SiliconFlow** | API Key | 余额（¥） | 支持多账号 |
-| **京东云 JoyBuilder** | Cookie | 剩余百分比 | 5h/7天/月多周期 |
-| **讯飞星辰** | Cookie | 剩余百分比 | 5h/周/月多周期，支持无忧版 |
-| **小米 MiMo** | Cookie | 剩余百分比 | Cookie 有效期约 24h |
+| **京东云 JoyBuilder** | Cookie (thor + pin) | 剩余百分比 | 5h/7天/月多周期 |
+| **讯飞星辰** | Cookie (ssoSessionId) | 剩余百分比 | 5h/周/月多周期，支持无忧版 |
+| **小米 MiMo** | Cookie (3字段) | 剩余百分比 | 套餐积分 + 补偿积分 + 月度用量 |
 
 ## 📥 快速开始
 
@@ -67,6 +68,12 @@ python run.py
 
 1. 登录 [DeepSeek Platform](https://platform.deepseek.com/api_keys) → 创建 API Key
 2. 设置页面选择 **DeepSeek** → 填入 API Key → 保存
+3. **（可选）填入平台 Token 可查看今日用量详情**：
+   - 打开 [DeepSeek 平台](https://platform.deepseek.com/usage) → F12 → Console
+   - 输入 `JSON.parse(localStorage.getItem('userToken')).value` → 复制返回的 Token
+   - 粘贴到设置页面的"平台 Token"输入框
+
+> 💡 不填平台 Token 仅查余额；填了可额外查看今日按模型的输入/输出/命中率/费用
 
 ### MiniMax Token Plan
 
@@ -76,9 +83,15 @@ python run.py
 
 ### 硅基流动 SiliconFlow
 
+> ⚠️ 暂时隐藏：API 返回余额与网页端不一致，待后续修复
+
+<!--
+
 1. 登录 [SiliconFlow](https://cloud.siliconflow.cn/) → 获取 API Key
 2. 设置页面选择 **硅基流动** → 填入 API Key → 保存
 3. Tooltip 显示：总余额、可用余额、充值余额
+
+-->
 
 ### 小米 MiMo
 
@@ -114,9 +127,10 @@ python run.py
 
 ```
 src/
-├── main.py              # 入口，日志初始化
+├── main.py              # 入口，全局异常捕获
 ├── app.py               # 应用核心类 App
-├── tray.py              # 托盘图标 + 右键菜单
+├── tray.py              # 托盘图标 + 右键菜单 + 悬浮窗联动
+├── floating.py          # 悬浮窗（白底黑字，5档透明度）
 ├── icon_renderer.py     # 图标渲染（多平台颜色/文字）
 ├── config.py            # 配置管理（v1→v2 自动迁移）
 ├── settings.py          # Web 设置界面
@@ -124,10 +138,10 @@ src/
 └── providers/
     ├── __init__.py      # 注册表 + 工厂函数
     ├── base.py          # Provider 抽象基类
-    ├── deepseek.py      # DeepSeek 余额查询
+    ├── deepseek.py      # DeepSeek 余额 + 用量（双模式）
     ├── jdcloud.py       # 京东云 JoyBuilder（Cookie 认证）
     ├── minimax_token.py # MiniMax Token Plan
-    ├── siliconflow.py   # 硅基流动 SiliconFlow 余额查询
+    ├── siliconflow.py   # 硅基流动（隐藏，代码保留）
     ├── xfyun.py         # 讯飞星辰（Cookie 认证）
     └── mimo.py          # 小米 MiMo（Cookie 认证）
 ```
